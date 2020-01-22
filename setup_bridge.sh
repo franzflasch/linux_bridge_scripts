@@ -148,7 +148,6 @@ if [ "${IPADDR}" != "false" ]; then
     if [ $exit_code -ne 0 ]; then
         echo "Error setting ip address ${IPADDR}"
     fi
-    exit 0
 fi
 
 if [ "${BRINGDOWN}" = "true" ]; then
