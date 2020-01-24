@@ -3,7 +3,7 @@
 ## Examples
 ### Create a new bridge named 'qemu_bridge' with tap3 and tap4 interface using ip address '192.168.42.50/24" and bring the bridge up
 ```shell
-./setup_bridge.sh -b=qemu_bridge --addbridge -a -i=tap3 -i=tap4 -p="192.168.42.50/24"
+./setup_bridge.sh -b=qemu_bridge --addbridge -a -i=tap3 -i=tap4 -p="192.168.42.50/24" -u
 ```
 
 ### Create a new bridge
