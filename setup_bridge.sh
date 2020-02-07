@@ -21,10 +21,13 @@ function usage()
 
 function get_attached_interfaces()
 {
-    local curr_attached_interfaces=$(brctl show ${BRIDGE} | awk 'FNR > 1 {print ";"$1";"$4} ORS="" ')
-    curr_interfaces=($(echo ${curr_attached_interfaces} | sed "s/;/ /g"))
-    curr_interfaces=(${curr_interfaces[@]:1})
-    echo "${curr_interfaces[@]}"
+    local ret_array=()
+    local curr_attached_interfaces=($(ip link show master ${BRIDGE} | grep -v '^ ' | awk '{print $2}'))
+    for i in "${curr_attached_interfaces[@]}"
+    do
+        ret_array+=("${i::-1}")
+    done
+    echo "${ret_array[@]}"
 }
 
 while [ "$1" != "" ]; do
@@ -80,14 +83,17 @@ done
 if [ "${BRIDGE}" = "empty" ]; then
     echo "No bridge name specified!"
     exit 3
+elif [ ${#BRIDGE} -gt 10 ]; then
+    echo "Name of bridge must not exceed length of 10"
+    exit 3
 fi
 
-brctl show ${BRIDGE} > /dev/null 2>&1 && exit_code=$? || exit_code=$?
+ip link show master ${BRIDGE} > /dev/null 2>&1 && exit_code=$? || exit_code=$?
 if [ "${ADDBRIDGE}" = "true" ]; then
     if [ ${exit_code} != 0 ]; then
         echo "${BRIDGE} does not exist"
         echo "creating new bridge ${BRIDGE}"
-        brctl addbr ${BRIDGE}
+        ip link add name "${BRIDGE}" type bridge
     else
         echo "Bridge ${BRIDGE} already existing!"
         exit 4
@@ -99,7 +105,7 @@ echo "Using Bridge: ${BRIDGE}"
 if [ "${DELBRIDGE}" = "true" ]; then
     echo "removing bridge ${BRIDGE}"
     ip link set dev ${BRIDGE} down
-    brctl delbr ${BRIDGE}
+    ip link del ${BRIDGE}
     exit 0
 fi
 
@@ -118,7 +124,7 @@ if [ "${DELINTERFACES}" = "true" ]; then
     for i in "${curr_interfaces[@]}"
     do
         echo "removing interface ${i} from bridge"
-        brctl delif ${BRIDGE} ${i}
+        ip link set dev ${i} nomaster
     done
     exit 0
 fi
@@ -127,7 +133,7 @@ if [ "${REMOVE}" = "true" ]; then
     for i in "${INTERFACES[@]}"
     do
         echo "removing interface ${i} from bridge"
-        brctl delif ${BRIDGE} ${i}
+        ip link set dev ${i} nomaster
     done
     exit 0
 fi
@@ -136,7 +142,7 @@ if [ "${ADD}" = "true" ]; then
     for i in "${INTERFACES[@]}"
     do
         echo "adding interface: ${i}"
-        brctl addif ${BRIDGE} ${i}
+        ip link set dev ${i} master ${BRIDGE}
     done
 fi
 

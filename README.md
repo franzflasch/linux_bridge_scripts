@@ -1,4 +1,4 @@
-# Simple script for setting up bridges in linux using brctl
+# Simple script for setting up bridges in linux
 
 ## Examples
 ### Create a new bridge named 'qemu_bridge' with tap3 and tap4 interface using ip address '192.168.42.50/24" and bring the bridge up
